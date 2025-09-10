@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+  // output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  fullnames String
+  lastnames String
+  username  String
+  email     String   @unique
+  password  String
+  phone     String
+  address   String
+  role      UserRole @default(USER)
+  order     Order[]
+  active    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model Event {
+  id               String        @id @default(cuid())
+  name             String        @unique
+  description      String
+  tickets          Ticket[]
+  category         EventCategory
+  date             DateTime
+  venue            Venue         @relation(fields: [venueId], references: [id])
+  venueId          String
+  vipCapacity      Int
+  vipAvailable     Int
+  vipSold          Int           @default(0)
+  vipReserved      Int           @default(0)
+  regularCapacity  Int
+  regularAvailable Int
+  regularSold      Int           @default(0)
+  regularReserved  Int           @default(0)
+  vipPrice         Float
+  regularPrice     Float
+  poster           String
+  images           String[]
+  logo             String        @default("")
+  order            Order[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+enum EventCategory {
+  CONCERT
+  THEATER
+  SPORT
+  FESTIVAL
+  OTHER
+}
+
+model Venue {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  address   String
+  city      String
+  capacity  Int
+  event     Event[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Ticket {
+  id        String       @id @default(cuid())
+  price     Float
+  event     Event        @relation(fields: [eventId], references: [id])
+  eventId   String
+  type      TicketType
+  status    TicketStatus
+  order     Order        @relation(fields: [orderId], references: [id])
+  orderId   String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+enum TicketType {
+  REGULAR
+  VIP
+}
+
+enum TicketStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+  EXPIRED
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  event     Event       @relation(fields: [eventId], references: [id])
+  eventId   String
+  user      User        @relation(fields: [userId], references: [id])
+  userId    String
+  tickets   Ticket[]
+  total     Float
+  status    OrderStatus @default(PENDING)
+  payments  Payment[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+  EXPIRED
+}
+
+model Payment {
+  id                  String        @id @default(cuid())
+  order               Order         @relation(fields: [orderId], references: [id])
+  mpPreferenceId      Int           @default(0)
+  mpPaymentId         Int           @default(0)
+  mpStatusDetail      String?       @default("")
+  orderId             String
+  mpCurrency          String        @default("COP")
+  amount              Float
+  mpTransactionAmount Float?        @default(0)
+  mpNetReceivedAmount Float?        @default(0)
+  method              PaymentMethod
+  status              PaymentStatus @default(PENDING)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  PAYPAL
+  TRANSFER
+  PSE
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  REFUNDED
+  EXPIRED
+}
