@@ -24,6 +24,7 @@ export class AuthController {
     res.cookie('token', payload.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      domain: process.env.FRONTEND_URL,
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
@@ -56,6 +57,7 @@ export class AuthController {
       httpOnly: true,
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
+      domain: process.env.FRONTEND_URL,
     });
     return {
       message: 'Logged out successfully',
