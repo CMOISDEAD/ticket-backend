@@ -24,6 +24,7 @@ async function main() {
       password: password1,
       phone: '1234567890',
       address: '123 Main st, 123 house',
+      active: true,
       role: 'ADMIN',
     },
   });
@@ -43,6 +44,7 @@ async function main() {
       password: password2,
       phone: '1234567890',
       address: '123 Main st, 123 house',
+      active: true,
       role: 'USER',
     },
   });
