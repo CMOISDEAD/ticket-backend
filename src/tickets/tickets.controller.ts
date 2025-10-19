@@ -62,4 +62,10 @@ export class TicketsController {
   remove(@Param('id') id: string) {
     return this.ticketsService.remove(id);
   }
+
+  @Post('mark-entry')
+  @ApiOkResponse({ type: TicketEntity })
+  markEntry(@Body() data: { ticketId: string }) {
+    return this.ticketsService.markEntry(data.ticketId);
+  }
 }

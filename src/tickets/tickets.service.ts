@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { PrismaService } from 'nestjs-prisma';
@@ -56,7 +60,10 @@ export class TicketsService {
   }
 
   async findOne(id: string) {
-    const ticket = await this.prisma.ticket.findUnique({ where: { id } });
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { id },
+      include: { event: true },
+    });
     if (!ticket) {
       throw new NotFoundException(`Ticket with ID ${id} not found`);
     }
@@ -87,5 +94,56 @@ export class TicketsService {
       throw new NotFoundException(`Ticket with id: ${id} was not found`);
 
     return `The ticket status is: ${ticket.status}`;
+  }
+
+  async markEntry(id: string) {
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { id },
+      include: { event: true },
+    });
+
+    if (!ticket) {
+      throw new NotFoundException(`Ticket with id ${id} not found`);
+    }
+
+    if (ticket.status !== 'SOLD') {
+      throw new BadRequestException('Ticket not valid or already used');
+    }
+
+    const isVip = ticket.type === 'VIP';
+    const event = ticket.event;
+
+    const currentCount = isVip ? event.vipSold : event.regularSold;
+    const maxCount = isVip ? event.vipCapacity : event.regularCapacity;
+
+    if (currentCount >= maxCount) {
+      throw new BadRequestException(
+        `The capacity for the ${isVip ? 'VIP' : 'Regular'} area is full`,
+      );
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.ticket.update({
+        where: { id: ticket.id },
+        data: { status: 'EXPIRED' },
+      }),
+      this.prisma.event.update({
+        where: { id: event.id },
+        data: isVip
+          ? {
+              vipSold: { increment: 1 },
+              vipAvailable: { decrement: 1 },
+            }
+          : {
+              regularSold: { increment: 1 },
+              regularAvailable: { decrement: 1 },
+            },
+      }),
+    ]);
+
+    return {
+      status: 'approved',
+      message: 'Entry marked correctly.',
+    };
   }
 }
