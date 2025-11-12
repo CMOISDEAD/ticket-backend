@@ -15,7 +15,9 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
-    PrismaModule,
+    PrismaModule.forRoot({
+      isGlobal: true,
+    }),
     UsersModule,
     EventsModule,
     VenuesModule,
