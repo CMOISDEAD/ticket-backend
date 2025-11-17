@@ -82,6 +82,18 @@ export class PaymentsService {
     if (order.status === 'CANCELLED')
       throw new NotFoundException('The order not aviable.');
 
+    if (order.status === 'EXPIRED')
+      throw new NotFoundException('The order has expired.');
+
+    // Check if order has expired
+    if (order.status === 'PENDING' && order.expiresAt) {
+      const now = new Date();
+      if (order.expiresAt <= now) {
+        await this.ordersService.expired(orderId);
+        throw new NotFoundException('The order has expired. Please create a new order.');
+      }
+    }
+
     const payment = await this.prisma.payment.create({
       data: {
         amount: order.total,

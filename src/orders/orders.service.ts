@@ -68,11 +68,16 @@ export class OrdersService {
         },
       });
 
+      // Set expiration time to 10 minutes from now
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + 10);
+
       return await tx.order.create({
         data: {
           ...data,
           total,
           status: 'PENDING',
+          expiresAt,
           tickets: {
             create: tickets.flatMap((ticket) =>
               Array.from({ length: ticket.quantity }).map(() => ({
@@ -258,6 +263,74 @@ export class OrdersService {
       });
 
       return order;
+    });
+  }
+
+  async expired(orderId: string) {
+    return await this.prisma.$transaction(async (tx) => {
+      const order = await tx.order.update({
+        where: {
+          id: orderId,
+        },
+        data: {
+          status: 'EXPIRED',
+          tickets: {
+            updateMany: {
+              where: {},
+              data: {
+                status: 'AVAILABLE',
+              },
+            },
+          },
+        },
+        include: {
+          tickets: true,
+          user: true,
+          payments: true,
+          event: {
+            include: {
+              venue: true,
+            },
+          },
+        },
+      });
+
+      const regularCount = this.getCount('REGULAR', order.tickets);
+      const vipCount = this.getCount('VIP', order.tickets);
+
+      await tx.event.update({
+        where: {
+          id: order.eventId,
+        },
+        data: {
+          regularReserved: {
+            decrement: regularCount,
+          },
+          regularAvailable: {
+            increment: regularCount,
+          },
+          vipReserved: {
+            decrement: vipCount,
+          },
+          vipAvailable: {
+            increment: vipCount,
+          },
+        },
+      });
+
+      return order;
+    });
+  }
+
+  async getExpiredOrders() {
+    const now = new Date();
+    return await this.prisma.order.findMany({
+      where: {
+        status: 'PENDING',
+        expiresAt: {
+          lte: now,
+        },
+      },
     });
   }
 

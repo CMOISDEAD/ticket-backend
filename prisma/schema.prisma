@@ -110,6 +110,7 @@ model Order {
   total     Float
   status    OrderStatus @default(PENDING)
   payments  Payment[]
+  expiresAt DateTime?
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 }

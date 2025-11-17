@@ -20,6 +20,9 @@ export class OrderEntity implements Order {
   @ApiProperty()
   updatedAt: Date;
 
+  @ApiProperty({ required: false, nullable: true })
+  expiresAt: Date | null;
+
   @ApiProperty()
   eventId: string;
 
