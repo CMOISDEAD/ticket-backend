@@ -65,4 +65,10 @@ export class OrdersController {
   async remove(@Param('id') id: string) {
     return new OrderEntity(await this.ordersService.remove(id));
   }
+
+  @Post(':id/cancel')
+  @ApiOkResponse({ type: OrderEntity })
+  async cancel(@Param('id') id: string) {
+    return new OrderEntity(await this.ordersService.cancelled(id));
+  }
 }

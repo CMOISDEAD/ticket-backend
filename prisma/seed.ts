@@ -68,8 +68,9 @@ async function main() {
     },
     update: {},
     create: {
-      logo: '',
-      poster: '',
+      logo: 'https://res.cloudinary.com/doci4d2ow/image/upload/v1760718338/Billy_Idol__Logo_ekv5bc.png',
+      poster:
+        'https://res.cloudinary.com/doci4d2ow/image/upload/v1760718255/Captura_de_pantalla_2025-08-02_081705_x9nd6v.png',
       images: [],
       name: 'BILLY IDOL | IT´S A NICE DAY TO… TOUR AGAIN',
       description:
@@ -90,39 +91,7 @@ async function main() {
     },
   });
 
-  const order = await prisma.order.create({
-    data: {
-      event: {
-        connect: {
-          id: event.id,
-        },
-      },
-      user: {
-        connect: {
-          id: user1.id,
-        },
-      },
-      total: 300_000,
-      tickets: {
-        create: [
-          {
-            event: { connect: { id: event.id } },
-            price: 150_000,
-            type: 'REGULAR',
-            status: 'RESERVED',
-          },
-          {
-            event: { connect: { id: event.id } },
-            price: 150_000,
-            type: 'REGULAR',
-            status: 'RESERVED',
-          },
-        ],
-      },
-    },
-  });
-
-  console.log({ user1, user2, venue, event, order });
+  console.log({ user1, user2, venue, event });
 }
 
 main()

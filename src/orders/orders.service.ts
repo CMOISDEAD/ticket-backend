@@ -48,7 +48,7 @@ export class OrdersService {
         return acc;
       }, 0);
 
-      await this.prisma.event.update({
+      await tx.event.update({
         where: {
           id: event.id,
         },
@@ -56,8 +56,14 @@ export class OrdersService {
           regularReserved: {
             increment: regularCount,
           },
+          regularAvailable: {
+            decrement: regularCount,
+          },
           vipReserved: {
             increment: vipCount,
+          },
+          vipAvailable: {
+            decrement: vipCount,
           },
         },
       });
@@ -199,7 +205,7 @@ export class OrdersService {
   }
 
   async cancelled(orderId: string) {
-    await this.prisma.$transaction(async (tx) => {
+    return await this.prisma.$transaction(async (tx) => {
       const order = await tx.order.update({
         where: {
           id: orderId,
@@ -217,6 +223,13 @@ export class OrdersService {
         },
         include: {
           tickets: true,
+          user: true,
+          payments: true,
+          event: {
+            include: {
+              venue: true,
+            },
+          },
         },
       });
 
@@ -232,11 +245,19 @@ export class OrdersService {
           regularReserved: {
             decrement: regularCount,
           },
+          regularAvailable: {
+            increment: regularCount,
+          },
           vipReserved: {
             decrement: vipCount,
           },
+          vipAvailable: {
+            increment: vipCount,
+          },
         },
       });
+
+      return order;
     });
   }
 
