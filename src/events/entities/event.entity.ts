@@ -64,6 +64,9 @@ export class EventEntity implements Event {
   regularPrice: number;
 
   @ApiProperty()
+  maxTicketsPerUser: number;
+
+  @ApiProperty()
   createdAt: Date;
 
   @ApiProperty()

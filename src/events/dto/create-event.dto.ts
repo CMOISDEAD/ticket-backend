@@ -75,4 +75,8 @@ export class CreateEventDto {
   @IsNumber()
   @ApiProperty()
   regularPrice: number;
+
+  @IsNumber()
+  @ApiProperty({ required: false, default: 0 })
+  maxTicketsPerUser?: number;
 }

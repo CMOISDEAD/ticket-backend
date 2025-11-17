@@ -51,6 +51,7 @@ model Event {
   poster           String
   images           String[]
   logo             String        @default("")
+  maxTicketsPerUser Int          @default(0)
   order            Order[]
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt

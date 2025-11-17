@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { PrismaService } from 'nestjs-prisma';
@@ -47,6 +51,34 @@ export class OrdersService {
         }
         return acc;
       }, 0);
+
+      // Check ticket limit per user if maxTicketsPerUser is set (> 0)
+      if (event.maxTicketsPerUser > 0) {
+        const userCompletedOrders = await tx.order.findMany({
+          where: {
+            userId: createOrderDto.userId,
+            eventId: createOrderDto.eventId,
+            status: 'COMPLETED',
+          },
+          include: {
+            tickets: true,
+          },
+        });
+
+        const userTotalTickets = userCompletedOrders.reduce(
+          (sum, order) => sum + order.tickets.length,
+          0,
+        );
+
+        const requestedTickets = vipCount + regularCount;
+
+        if (userTotalTickets + requestedTickets > event.maxTicketsPerUser) {
+          const remaining = event.maxTicketsPerUser - userTotalTickets;
+          throw new BadRequestException(
+            `You have already purchased ${userTotalTickets} ticket(s) for this event. The maximum allowed is ${event.maxTicketsPerUser} ticket(s) per user. You can only purchase ${remaining} more ticket(s).`,
+          );
+        }
+      }
 
       await tx.event.update({
         where: {
