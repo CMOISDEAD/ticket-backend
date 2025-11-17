@@ -45,6 +45,20 @@ export class EventsController {
     return this.eventsService.upcoming();
   }
 
+  @Get('/inventory/all')
+  @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ description: 'Get inventory for all events' })
+  getAllInventory() {
+    return this.eventsService.getAllInventory();
+  }
+
+  @Get(':id/inventory')
+  @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ description: 'Get inventory for a specific event' })
+  getInventory(@Param('id') id: string) {
+    return this.eventsService.getInventory(id);
+  }
+
   @Get(':id')
   @ApiOkResponse({ type: EventEntity })
   findOne(@Param('id') id: string) {

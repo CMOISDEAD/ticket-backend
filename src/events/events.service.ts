@@ -58,4 +58,84 @@ export class EventsService {
       take: 4,
     });
   }
+
+  async getInventory(id: string) {
+    const event = await this.prisma.event.findUnique({
+      where: { id },
+      include: {
+        venue: true,
+      },
+    });
+
+    if (!event) {
+      throw new NotFoundException(`Event with ID ${id} not found`);
+    }
+
+    return {
+      eventId: event.id,
+      eventName: event.name,
+      date: event.date,
+      venue: event.venue,
+      vip: {
+        total: event.vipCapacity,
+        available: event.vipAvailable,
+        sold: event.vipSold,
+        reserved: event.vipReserved,
+        price: event.vipPrice,
+      },
+      regular: {
+        total: event.regularCapacity,
+        available: event.regularAvailable,
+        sold: event.regularSold,
+        reserved: event.regularReserved,
+        price: event.regularPrice,
+      },
+      totals: {
+        total: event.vipCapacity + event.regularCapacity,
+        available: event.vipAvailable + event.regularAvailable,
+        sold: event.vipSold + event.regularSold,
+        reserved: event.vipReserved + event.regularReserved,
+      },
+      updatedAt: event.updatedAt,
+    };
+  }
+
+  async getAllInventory() {
+    const events = await this.prisma.event.findMany({
+      include: {
+        venue: true,
+      },
+      orderBy: {
+        date: 'asc',
+      },
+    });
+
+    return events.map((event) => ({
+      eventId: event.id,
+      eventName: event.name,
+      date: event.date,
+      venue: event.venue,
+      vip: {
+        total: event.vipCapacity,
+        available: event.vipAvailable,
+        sold: event.vipSold,
+        reserved: event.vipReserved,
+        price: event.vipPrice,
+      },
+      regular: {
+        total: event.regularCapacity,
+        available: event.regularAvailable,
+        sold: event.regularSold,
+        reserved: event.regularReserved,
+        price: event.regularPrice,
+      },
+      totals: {
+        total: event.vipCapacity + event.regularCapacity,
+        available: event.vipAvailable + event.regularAvailable,
+        sold: event.vipSold + event.regularSold,
+        reserved: event.vipReserved + event.regularReserved,
+      },
+      updatedAt: event.updatedAt,
+    }));
+  }
 }
