@@ -6,54 +6,216 @@
       body {
         margin: 0;
         padding: 0;
-        background: #ffffff;
-        font-family: monospace, monospace;
-        color: #000000;
+        background: #f9fafb;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: #0f172a;
       }
       .email {
-        max-width: 600px;
+        max-width: 700px;
         margin: 40px auto;
-        border: 1px solid #000;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 0 24px rgba(0, 255, 200, 0.15);
       }
       .inner {
-        padding: 24px;
+        padding: 32px;
+      }
+      .header {
+        border-bottom: 2px solid #22d3ee;
+        padding-bottom: 20px;
+        margin-bottom: 24px;
       }
       h1 {
-        font-size: 20px;
-        margin: 0 0 16px 0;
+        font-size: 24px;
+        margin: 0 0 8px 0;
         font-weight: 700;
-        text-transform: uppercase;
+        color: #0ea5e9;
+        letter-spacing: 0.5px;
+      }
+      h2 {
+        font-size: 20px;
+        margin: 24px 0 12px 0;
+        font-weight: 600;
+        color: #0f172a;
       }
       p {
         margin: 0 0 12px 0;
-        line-height: 1.4;
+        line-height: 1.6;
+        font-size: 14px;
+      }
+      .event-info {
+        background: #f1f5f9;
+        padding: 20px;
+        border-radius: 12px;
+        margin: 20px 0;
+        border-left: 4px solid #22d3ee;
+      }
+      .event-info p {
+        margin: 8px 0;
+      }
+      .event-info strong {
+        color: #0ea5e9;
+      }
+      .tickets-container {
+        margin: 24px 0;
+      }
+      .ticket-card {
+        background: #ffffff;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 16px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+      .ticket-card.vip {
+        border-color: #fbbf24;
+        background: linear-gradient(135deg, #fef3c7 0%, #ffffff 100%);
+      }
+      .ticket-card.regular {
+        border-color: #60a5fa;
+        background: linear-gradient(135deg, #dbeafe 0%, #ffffff 100%);
+      }
+      .ticket-header {
+        width: 100%;
+        text-align: center;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .ticket-type {
+        font-size: 18px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin: 0 0 8px 0;
+      }
+      .ticket-type.vip {
+        color: #d97706;
+      }
+      .ticket-type.regular {
+        color: #2563eb;
+      }
+      .ticket-id {
+        font-size: 12px;
+        color: #64748b;
+        font-family: monospace;
+        margin: 4px 0;
+      }
+      .ticket-price {
+        font-size: 16px;
+        font-weight: 600;
+        color: #0f172a;
+      }
+      .qr-code {
+        width: 300px;
+        height: 300px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 8px;
+        background: #ffffff;
+      }
+      .qr-code img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
       }
       .btn {
         display: inline-block;
-        margin-top: 12px;
-        padding: 12px 16px;
-        border: 1px solid #000;
+        margin-top: 20px;
+        padding: 14px 24px;
+        background: #22d3ee;
+        color: #0b1020;
         text-decoration: none;
-        color: #000;
         font-weight: 700;
-        text-transform: uppercase;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+        text-align: center;
+      }
+      .btn:hover {
+        filter: brightness(1.05);
       }
       .footer {
-        border-top: 1px solid #000;
-        padding: 12px 24px;
+        border-top: 1px solid #e5e7eb;
+        padding: 20px 32px;
         font-size: 12px;
+        color: #94a3b8;
+        text-align: center;
+        background: #f9fafb;
+        border-radius: 0 0 16px 16px;
+      }
+      .total-info {
+        background: #0ea5e9;
+        color: #ffffff;
+        padding: 16px;
+        border-radius: 8px;
+        text-align: center;
+        margin: 24px 0;
+      }
+      .total-info p {
+        margin: 4px 0;
+        font-size: 16px;
+      }
+      .total-amount {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 8px 0;
       }
     </style>
   </head>
   <body>
     <div class='email'>
       <div class='inner'>
-        <h1>Pago confirmado</h1>
-        <p>La orden <strong>{{orderId}}</strong> fue pagada exitosamente.</p>
-        <p>Puedes revisar los detalles y descargar tus entradas desde aquí:</p>
-        <a href='http://localhost:3000/orders/{{orderId}}' class='btn'>Ver orden</a>
+        <div class='header'>
+          <h1>✅ Pago Confirmado</h1>
+          <p>Hola <strong>{{userName}}</strong>,</p>
+          <p>Tu orden <strong>{{orderId}}</strong> fue pagada exitosamente. Aquí están tus boletas:</p>
+        </div>
+
+        <div class='event-info'>
+          <h2>📅 Información del Evento</h2>
+          <p><strong>Evento:</strong> {{eventName}}</p>
+          <p><strong>Fecha:</strong> {{eventDate}}</p>
+          <p><strong>Lugar:</strong> {{venueName}}</p>
+          <p><strong>Dirección:</strong> {{venueAddress}}, {{venueCity}}</p>
+        </div>
+
+        <div class='total-info'>
+          <p>Total Pagado</p>
+          <p class='total-amount'>${{orderTotal}}</p>
+        </div>
+
+        <h2>🎫 Tus Boletas</h2>
+        <div class='tickets-container'>
+          {{#each tickets}}
+          <div class='ticket-card {{this.type}}'>
+            <div class='ticket-header'>
+              <p class='ticket-type {{this.type}}'>{{this.type}}</p>
+              <p class='ticket-id'>ID: {{this.id}}</p>
+              <p class='ticket-price'>${{this.price}}</p>
+            </div>
+            {{#if this.qrCode}}
+            <div class='qr-code'>
+              <img src='{{this.qrCode}}' alt='QR Code para ticket {{this.id}}' />
+            </div>
+            {{else}}
+            <p style='color: #ef4444;'>Error al generar QR code</p>
+            {{/if}}
+          </div>
+          {{/each}}
+        </div>
+
+        <div style='text-align: center;'>
+          <a href='{{orderUrl}}' class='btn'>Ver Orden Completa</a>
+        </div>
+
+        <p style='margin-top: 24px; font-size: 12px; color: #64748b;'>
+          <strong>Importante:</strong> Guarda este correo y presenta el código QR en la entrada del evento. 
+          Cada boleta tiene un código único que será escaneado al ingresar.
+        </p>
       </div>
-      <div class='footer'>QueBoleta — Confirmación</div>
+      <div class='footer'>QueBoleta® 2025 — Todos los derechos reservados</div>
     </div>
   </body>
 </html>

@@ -2,6 +2,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
+import * as QRCode from 'qrcode';
 
 @Injectable()
 export class MailService {
@@ -87,23 +88,90 @@ export class MailService {
         payments: true,
         user: true,
         tickets: true,
+        event: {
+          include: {
+            venue: true,
+          },
+        },
       },
     });
 
     if (!order)
       throw new NotFoundException(`Order with ID ${orderId} not found`);
 
+    // Generate QR codes for each ticket
+    const ticketsWithQR = await Promise.all(
+      order.tickets.map(async (ticket) => {
+        try {
+          // Generate QR code as data URL (base64 image)
+          const qrCodeDataUrl = await QRCode.toDataURL(ticket.id, {
+            errorCorrectionLevel: 'M',
+            type: 'image/png',
+            width: 300,
+            margin: 1,
+          });
+          return {
+            id: ticket.id,
+            type: ticket.type,
+            status: ticket.status,
+            price: ticket.price,
+            qrCode: qrCodeDataUrl,
+          };
+        } catch (error) {
+          this.logger.error(`Error generating QR code for ticket ${ticket.id}:`, error);
+          return {
+            id: ticket.id,
+            type: ticket.type,
+            status: ticket.status,
+            price: ticket.price,
+            qrCode: null,
+          };
+        }
+      }),
+    );
+
+    // Format event date
+    const eventDate = new Date(order.event.date).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    // Format prices
+    const formatPrice = (price: number) => {
+      return new Intl.NumberFormat('es-ES', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(price);
+    };
+
     await this.mailerService.sendMail({
       from: process.env.MAIL_FROM,
       to: order.user.email,
-      subject: `Order ${order.id} paid successfully`,
+      subject: `🎫 Tus boletas para ${order.event.name} - Orden ${order.id}`,
       template: 'order-paid',
       context: {
         orderId: order.id,
+        orderTotal: formatPrice(order.total),
+        userName: `${order.user.fullnames} ${order.user.lastnames}`,
+        eventName: order.event.name,
+        eventDate: eventDate,
+        venueName: order.event.venue.name,
+        venueAddress: order.event.venue.address,
+        venueCity: order.event.venue.city,
+        tickets: ticketsWithQR.map((ticket) => ({
+          ...ticket,
+          price: formatPrice(ticket.price),
+        })),
+        orderUrl: `${process.env.FRONTEND_URL}/orders/${order.id}`,
       },
     });
 
-    this.logger.log(`payment approved email send`);
+    this.logger.log(`payment approved email sent to ${order.user.email}`);
   }
 
   async paymentRejectedEmail(orderId: string) {
